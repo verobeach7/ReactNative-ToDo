@@ -6,10 +6,12 @@ import {
   TextInput,
   TouchableOpacity,
   ScrollView,
+  Alert,
 } from "react-native";
 import { theme } from "./colors";
 import { useEffect, useState } from "react";
 import AsyncStorage from "@react-native-async-storage/async-storage";
+import { Fontisto } from "@expo/vector-icons";
 
 const STORAGE_KEY = "toDos";
 
@@ -62,6 +64,26 @@ export default function App() {
     setText("");
   };
 
+  const deleteToDo = (key) => {
+    Alert.alert("Delete To Do", "Are you sure?", [
+      { text: "Cancel" },
+      {
+        text: "Confirm",
+        // style은 iOS만 가능
+        style: "destructive",
+        onPress: () => {
+          // 기존의 toDos를 mutate하여 새로운 객체를 생성(아직 state되지 않은 새로운 객체)
+          const newToDos = { ...toDos };
+          // 생성된 객체 중 해당 키를 가지고 있는 것을 찾아 삭제
+          delete newToDos[key];
+          // state에 새로운 객체를 저장
+          setToDos(newToDos);
+          saveToDos(newToDos);
+        },
+      },
+    ]);
+  };
+
   // console.log(toDos);
 
   return (
@@ -98,6 +120,9 @@ export default function App() {
             <View key={key} style={styles.toDo}>
               {/* 그 후 key를 가지고 오브젝트 내부에 접근 */}
               <Text style={styles.toDoText}>{toDos[key].text}</Text>
+              <TouchableOpacity onPress={() => deleteToDo(key)}>
+                <Fontisto name="trash" size={20} color={theme.bg} />
+              </TouchableOpacity>
             </View>
           ) : null
         )}
@@ -135,6 +160,9 @@ const styles = StyleSheet.create({
     paddingVertical: 20,
     paddingHorizontal: 20,
     borderRadius: 15,
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
   },
   toDoText: {
     color: "white",
