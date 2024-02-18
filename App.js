@@ -3,29 +3,45 @@ import {
   StyleSheet,
   Text,
   View,
+  TextInput,
   TouchableOpacity,
-  TouchableHighlight,
-  // TouchableWithoutFeedback, // 터치는 가능하나 어떠한 UI변화도 일어나지 않음
-  Pressable,
 } from "react-native";
 import { theme } from "./colors";
+import { useState } from "react";
 
 export default function App() {
+  const [working, setWorking] = useState(true);
+  const [text, setText] = useState("");
+  const travel = () => setWorking(false);
+  const work = () => setWorking(true);
+  const onChangeText = (payload) => setText(payload);
   return (
     <View style={styles.container}>
       <StatusBar style="auto" />
       <View style={styles.header}>
-        <TouchableOpacity activeOpacity={0}>
-          <Text style={styles.btnText}>Work</Text>
+        <TouchableOpacity onPress={work}>
+          <Text
+            style={{ ...styles.btnText, color: working ? "white" : theme.grey }}
+          >
+            Work
+          </Text>
         </TouchableOpacity>
-        <TouchableHighlight
-          underlayColor="red"
-          activeOpacity={0.6}
-          onPress={() => console.log("press")}
-        >
-          <Text style={styles.btnText}>Travel</Text>
-        </TouchableHighlight>
+        <TouchableOpacity onPress={travel}>
+          <Text
+            style={{ ...styles.btnText, color: working ? theme.grey : "white" }}
+          >
+            Travel
+          </Text>
+        </TouchableOpacity>
       </View>
+      <TextInput
+        // keyboardType="number-pad"
+        // returnKeyType="send"
+        value={text}
+        onChangeText={onChangeText}
+        placeholder={working ? "Add a To Do" : "Where do you wanna go?"}
+        style={styles.input}
+      />
     </View>
   );
 }
@@ -44,6 +60,13 @@ const styles = StyleSheet.create({
   btnText: {
     fontSize: 38,
     fontWeight: "600",
-    color: "white",
+  },
+  input: {
+    backgroundColor: "white",
+    paddingVertical: 15,
+    paddingHorizontal: 20,
+    borderRadius: 30,
+    marginTop: 20,
+    fontSize: 18,
   },
 });
