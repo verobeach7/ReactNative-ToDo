@@ -8,16 +8,47 @@ import {
   ScrollView,
 } from "react-native";
 import { theme } from "./colors";
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import AsyncStorage from "@react-native-async-storage/async-storage";
+
+const STORAGE_KEY = "toDos";
 
 export default function App() {
   const [working, setWorking] = useState(true);
   const [text, setText] = useState("");
   const [toDos, setToDos] = useState({});
+  useEffect(() => {
+    loadToDos();
+  }, []);
+
   const travel = () => setWorking(false);
   const work = () => setWorking(true);
+
   const onChangeText = (payload) => setText(payload);
-  const addToDo = () => {
+
+  const saveToDos = async (toSave) => {
+    try {
+      await AsyncStorage.setItem(STORAGE_KEY, JSON.stringify(toSave));
+    } catch (e) {
+      console.log(e);
+    }
+  };
+
+  const loadToDos = async () => {
+    try {
+      const s = await AsyncStorage.getItem(STORAGE_KEY);
+      // JSON.parse는 json을 object로 바꿔줌
+      // console.log(`s: ${s}`);
+      // console.log(`parse: ${JSON.parse(s)}`);
+      // console.log(JSON.parse(s));
+      s !== null ? setToDos(JSON.parse(s)) : null;
+      // setToDos(JSON.parse(s));
+    } catch (e) {
+      console.log(e);
+    }
+  };
+
+  const addToDo = async () => {
     if (text === "") {
       return;
     }
@@ -27,9 +58,12 @@ export default function App() {
     // get same result by using ES6 below
     const newToDos = { ...toDos, [Date.now()]: { text, working } };
     setToDos(newToDos);
+    await saveToDos(newToDos);
     setText("");
   };
-  console.log(toDos);
+
+  // console.log(toDos);
+
   return (
     <View style={styles.container}>
       <StatusBar style="auto" />
@@ -59,12 +93,14 @@ export default function App() {
       />
       <ScrollView>
         {/* Object.keys를 통해 toDos객체의 key를 리스트로 얻어옴. 리스트를 map함수를 이용해 순회 */}
-        {Object.keys(toDos).map((key) => (
-          <View key={key} style={styles.toDo}>
-            {/* 그 후 key를 가지고 오브젝트 내부에 접근 */}
-            <Text style={styles.toDoText}>{toDos[key].text}</Text>
-          </View>
-        ))}
+        {Object.keys(toDos).map((key) =>
+          toDos[key].working === working ? (
+            <View key={key} style={styles.toDo}>
+              {/* 그 후 key를 가지고 오브젝트 내부에 접근 */}
+              <Text style={styles.toDoText}>{toDos[key].text}</Text>
+            </View>
+          ) : null
+        )}
       </ScrollView>
     </View>
   );
