@@ -7,6 +7,7 @@ import {
   TouchableOpacity,
   ScrollView,
   Alert,
+  Platform,
 } from "react-native";
 import { theme } from "./colors";
 import { useEffect, useState } from "react";
@@ -43,7 +44,10 @@ export default function App() {
       // console.log(`s: ${s}`);
       // console.log(`parse: ${JSON.parse(s)}`);
       // console.log(JSON.parse(s));
-      s !== null ? setToDos(JSON.parse(s)) : null;
+      // s !== null ? setToDos(JSON.parse(s)) : null;
+      if (s) {
+        setToDos(JSON.parse(s));
+      }
       // setToDos(JSON.parse(s));
     } catch (e) {
       console.log(e);
@@ -65,23 +69,33 @@ export default function App() {
   };
 
   const deleteToDo = (key) => {
-    Alert.alert("Delete To Do", "Are you sure?", [
-      { text: "Cancel" },
-      {
-        text: "Confirm",
-        // style은 iOS만 가능
-        style: "destructive",
-        onPress: () => {
-          // 기존의 toDos를 mutate하여 새로운 객체를 생성(아직 state되지 않은 새로운 객체)
-          const newToDos = { ...toDos };
-          // 생성된 객체 중 해당 키를 가지고 있는 것을 찾아 삭제
-          delete newToDos[key];
-          // state에 새로운 객체를 저장
-          setToDos(newToDos);
-          saveToDos(newToDos);
+    if (Platform.OS === "web") {
+      const ok = confirm("Do you want to delete this?");
+      if (ok) {
+        const newToDos = { ...toDos };
+        delete newToDos[key];
+        setToDos(newToDos);
+        saveToDos(newToDos);
+      }
+    } else {
+      Alert.alert("Delete To Do", "Are you sure?", [
+        { text: "Cancel" },
+        {
+          text: "Confirm",
+          // style은 iOS만 가능
+          style: "destructive",
+          onPress: () => {
+            // 기존의 toDos를 mutate하여 새로운 객체를 생성(아직 state되지 않은 새로운 객체)
+            const newToDos = { ...toDos };
+            // 생성된 객체 중 해당 키를 가지고 있는 것을 찾아 삭제
+            delete newToDos[key];
+            // state에 새로운 객체를 저장
+            setToDos(newToDos);
+            saveToDos(newToDos);
+          },
         },
-      },
-    ]);
+      ]);
+    }
   };
 
   // console.log(toDos);
@@ -121,7 +135,7 @@ export default function App() {
               {/* 그 후 key를 가지고 오브젝트 내부에 접근 */}
               <Text style={styles.toDoText}>{toDos[key].text}</Text>
               <TouchableOpacity onPress={() => deleteToDo(key)}>
-                <Fontisto name="trash" size={20} color={theme.bg} />
+                <Fontisto name="trash" size={20} color={theme.grey} />
               </TouchableOpacity>
             </View>
           ) : null
@@ -155,7 +169,7 @@ const styles = StyleSheet.create({
     fontSize: 18,
   },
   toDo: {
-    backgroundColor: theme.grey,
+    backgroundColor: theme.toDoBg,
     marginBottom: 10,
     paddingVertical: 20,
     paddingHorizontal: 20,
